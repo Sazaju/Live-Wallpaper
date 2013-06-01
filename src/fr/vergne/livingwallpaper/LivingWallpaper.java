@@ -31,6 +31,7 @@ public class LivingWallpaper extends WallpaperService {
 		private BotLocation botLocation = new BotLocation();
 		private int updateFrequencyInMs = 10;
 		private final Handler handler = new Handler();
+		private boolean visible = true;
 		private final String PREF_SPEED = getResources().getString(
 				R.string.pref_speed_key);
 		private final Runnable botRunner = new Runnable() {
@@ -45,8 +46,6 @@ public class LivingWallpaper extends WallpaperService {
 				handler.postDelayed(botRunner, updateFrequencyInMs);
 			}
 		};
-
-		private boolean visible = true;
 
 		public LiveWallpaperEngine() {
 			handler.post(botRunner);
