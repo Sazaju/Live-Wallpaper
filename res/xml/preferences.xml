@@ -5,7 +5,7 @@
         android:defaultValue="@string/pref_speed_default"
         android:entries="@array/speeds"
         android:entryValues="@array/speedValues"
-        android:key="speed"
-        android:title="@string/pref_speed" />
+        android:key="@string/pref_speed_key"
+        android:title="@string/pref_speed_title" />
 
 </PreferenceScreen>

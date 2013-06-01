@@ -7,13 +7,12 @@
         <item>4</item>
         <item>5</item>
     </string-array>
-
     <string-array name="speeds">
-        <item>Pussyfoot</item>
-        <item>Walk</item>
-        <item>Fast walk</item>
-        <item>Run</item>
-        <item>Sprint</item>
+        <item>@string/pref_speed_1</item>
+        <item>@string/pref_speed_2</item>
+        <item>@string/pref_speed_3</item>
+        <item>@string/pref_speed_4</item>
+        <item>@string/pref_speed_5</item>
     </string-array>
 
 </resources>

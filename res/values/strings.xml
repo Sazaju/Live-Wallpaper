@@ -2,7 +2,12 @@
 
     <string name="app_name">Living Wallpaper</string>
     <string name="app_description">A living wallpaper.</string>
-    <string name="pref_speed">Speed</string>
+    <string name="pref_speed_key">speed</string>
+    <string name="pref_speed_title">Speed</string>
     <string name="pref_speed_default">2</string>
-    
+    <string name="pref_speed_1">Pussyfoot</string>
+    <string name="pref_speed_2">Walk</string>
+    <string name="pref_speed_3">Fast walk</string>
+    <string name="pref_speed_4">Run</string>
+    <string name="pref_speed_5">Sprint</string>
 </resources>

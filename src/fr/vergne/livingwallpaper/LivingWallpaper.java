@@ -31,6 +31,8 @@ public class LivingWallpaper extends WallpaperService {
 		private BotLocation botLocation = new BotLocation();
 		private int updateFrequencyInMs = 10;
 		private final Handler handler = new Handler();
+		private final String PREF_SPEED = getResources().getString(
+				R.string.pref_speed_key);
 		private final Runnable botRunner = new Runnable() {
 			@Override
 			public void run() {
@@ -55,7 +57,7 @@ public class LivingWallpaper extends WallpaperService {
 				@Override
 				public void onSharedPreferenceChanged(SharedPreferences prefs,
 						String key) {
-					if (key.equals("speed")) {
+					if (key.equals(PREF_SPEED)) {
 						updateSpeed();
 					} else {
 						throw new IllegalArgumentException(key
@@ -70,7 +72,7 @@ public class LivingWallpaper extends WallpaperService {
 		private void updateSpeed() {
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(LivingWallpaper.this);
-			Integer speed = Integer.valueOf(prefs.getString("speed",
+			Integer speed = Integer.valueOf(prefs.getString(PREF_SPEED,
 					getResources().getString(R.string.pref_speed_default)));
 			botLocation.setPixelsPerSecond(Math.round((float) speed
 					* androidPic.getWidth()));
