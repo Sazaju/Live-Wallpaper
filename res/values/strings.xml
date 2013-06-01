@@ -1,0 +1,8 @@
+<resources>
+
+    <string name="app_name">Living Wallpaper</string>
+    <string name="app_description">A living wallpaper.</string>
+    <string name="pref_speed">Speed</string>
+    <string name="pref_speed_default">2</string>
+    
+</resources>
