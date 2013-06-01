@@ -15,6 +15,10 @@ import android.service.wallpaper.WallpaperService;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
+// TODO add BotEmotion class
+// TODO Move random targets to emotion (but with no delay) as "bored"
+// TODO Remove touch targets but add "interrupted" emotion (touch droid = droid stop during 4s + display "?")
+// TODO use listeners? services?
 public class LivingWallpaper extends WallpaperService {
 
 	private final Logger logger = Logger.getLogger(LivingWallpaper.class
