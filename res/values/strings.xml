@@ -10,4 +10,13 @@
     <string name="pref_speed_3">Fast walk</string>
     <string name="pref_speed_4">Run</string>
     <string name="pref_speed_5">Sprint</string>
+    <string name="pref_zoom_key">zoom</string>
+    <string name="pref_zoom_title">Zoom</string>
+    <string name="pref_zoom_default">1</string>
+    <string name="pref_zoom_0.5">Tiny</string>
+    <string name="pref_zoom_0.75">Small</string>
+    <string name="pref_zoom_1">Normal</string>
+    <string name="pref_zoom_1.5">Big</string>
+    <string name="pref_zoom_2">Huge</string>
+
 </resources>

@@ -1,7 +1,7 @@
 package fr.vergne.livingwallpaper;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -9,39 +9,44 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.service.wallpaper.WallpaperService;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import fr.vergne.livingwallpaper.bot.Bot;
+import fr.vergne.livingwallpaper.bot.BotEmotion;
+import fr.vergne.livingwallpaper.bot.action.ActionFactory;
+import fr.vergne.livingwallpaper.environment.Environment;
 
-// TODO add BotEmotion class
 // TODO Move random targets to emotion (but with no delay) as "bored"
 // TODO Remove touch targets but add "interrupted" emotion (touch droid = droid stop during 4s + display "?")
 // TODO use listeners? services?
 public class LivingWallpaper extends WallpaperService {
 
-	private final Logger logger = Logger.getLogger(LivingWallpaper.class
-			.getName());
-
 	@Override
 	public Engine onCreateEngine() {
-		logger.setLevel(Level.ALL);
 		return new LiveWallpaperEngine();
 	}
 
 	private class LiveWallpaperEngine extends Engine {
 
-		private BotLocation botLocation = new BotLocation();
 		private int updateFrequencyInMs = 10;
-		private final Handler handler = new Handler();
 		private boolean visible = true;
+		private final Bot bot = new Bot();
+		private final Environment botEnvironment = bot.getEnvironment();
+		private final ActionFactory actionFactory = new ActionFactory();
+		private final BotEmotion botEmotion = new BotEmotion();
+		private final Handler handler = new Handler();
 		private final String PREF_SPEED = getResources().getString(
 				R.string.pref_speed_key);
+		private final String PREF_ZOOM = getResources().getString(
+				R.string.pref_zoom_key);
 		private final Runnable botRunner = new Runnable() {
 			@Override
 			public void run() {
-				botLocation.moveToTarget();
+				bot.executeAction();
 				if (visible) {
 					draw();
 				} else {
@@ -62,6 +67,9 @@ public class LivingWallpaper extends WallpaperService {
 						String key) {
 					if (key.equals(PREF_SPEED)) {
 						updateSpeed();
+					} else if (key.equals(PREF_ZOOM)) {
+						updateZoom();
+						updateSpeed(); // depends on zoom
 					} else {
 						throw new IllegalArgumentException(key
 								+ " is not managed.");
@@ -69,16 +77,53 @@ public class LivingWallpaper extends WallpaperService {
 				}
 
 			});
-			updateSpeed();
+		}
+
+		private void updateZoom() {
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(LivingWallpaper.this);
+			float zoom = Float.parseFloat(prefs.getString(PREF_ZOOM,
+					getResources().getString(R.string.pref_zoom_default)));
+
+			SurfaceHolder holder = getSurfaceHolder();
+			Canvas canvas = holder.lockCanvas();
+			canvas.setDensity(Math.round(zoom * getDroidPicture().getDensity()));
+			holder.unlockCanvasAndPost(canvas);
 		}
 
 		private void updateSpeed() {
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(LivingWallpaper.this);
-			Integer speed = Integer.valueOf(prefs.getString(PREF_SPEED,
+			int speed = Integer.parseInt(prefs.getString(PREF_SPEED,
 					getResources().getString(R.string.pref_speed_default)));
-			botLocation.setPixelsPerSecond(Math.round((float) speed
-					* androidPic.getWidth()));
+
+			bot.setPixelsPerSecond(Math.round(getCanvasZoom() * speed
+					* getDroidPicture().getWidth()));
+		}
+
+		private float getCanvasZoom() {
+			SurfaceHolder holder = getSurfaceHolder();
+			Canvas canvas = null;
+			float zoom = 1;
+			try {
+				canvas = holder.lockCanvas(new Rect(0, 0, 0, 0));
+				if (canvas != null) {
+					int droidDensity = getDroidPicture().getDensity();
+					int canvasDensity = canvas.getDensity();
+					canvasDensity = canvasDensity == 0 ? droidDensity
+							: canvasDensity;
+					zoom = (float) canvasDensity / droidDensity;
+				} else {
+					throw new RuntimeException("Impossible to lock the canvas.");
+				}
+			} finally {
+				if (canvas != null) {
+					holder.unlockCanvasAndPost(canvas);
+				} else {
+					// nothing to unlock
+				}
+			}
+			return zoom;
 		}
 
 		@Override
@@ -101,13 +146,14 @@ public class LivingWallpaper extends WallpaperService {
 		@Override
 		public void onSurfaceChanged(SurfaceHolder holder, int format,
 				int width, int height) {
-			botLocation.setMaxX(width);
-			botLocation.setMaxY(height);
-			botLocation.setX(width / 2);
-			botLocation.setY(height / 2);
-			botLocation.resetTarget();
-
 			super.onSurfaceChanged(holder, format, width, height);
+
+			bot.setX(width / 2);
+			bot.setY(height / 2);
+			botEnvironment.setMaxX(width);
+			botEnvironment.setMaxY(height);
+			updateZoom();
+			updateSpeed();
 		}
 
 		@Override
@@ -123,26 +169,25 @@ public class LivingWallpaper extends WallpaperService {
 
 		@Override
 		public void onTouchEvent(MotionEvent event) {
-			botLocation.setTarget((int) event.getX(), (int) event.getY());
+			bot.addAction(actionFactory.createWalkingAction(event.getX(),
+					event.getY()));
+			botEmotion.interrupt();
 			super.onTouchEvent(event);
 		}
-
-		Bitmap androidPic = BitmapFactory.decodeResource(getResources(),
-				R.drawable.ic_launcher);
 
 		private void draw() {
 			SurfaceHolder holder = getSurfaceHolder();
 			Canvas canvas = null;
 			try {
+				float zoom = getCanvasZoom();
 				canvas = holder.lockCanvas();
 				if (canvas != null) {
 					canvas.drawColor(Color.WHITE);
-					float left = botLocation.getX()
-							- (androidPic.getWidth() / 2);
-					float top = botLocation.getY()
-							- (androidPic.getHeight() / 2);
-					canvas.setDensity(androidPic.getDensity());
-					canvas.drawBitmap(androidPic, left, top, null);
+					float left = bot.getX()
+							- (zoom * getDroidPicture().getWidth() / 2);
+					float top = bot.getY()
+							- (zoom * getDroidPicture().getHeight() / 2);
+					canvas.drawBitmap(getDroidPicture(), left, top, null);
 				} else {
 					throw new RuntimeException("Impossible to lock the canvas.");
 				}
@@ -153,6 +198,24 @@ public class LivingWallpaper extends WallpaperService {
 					// nothing to unlock
 				}
 			}
+		}
+
+		Map<Integer, Bitmap> bitmaps = new WeakHashMap<Integer, Bitmap>();
+
+		private Bitmap getDroidPicture() {
+			int id;
+			if (botEmotion.isQuestioning()) {
+				id = R.drawable.question_droid;
+			} else {
+				id = R.drawable.droid;
+			}
+			if (bitmaps.containsKey(id)) {
+				// use the one already loaded
+			} else {
+				bitmaps.put(id,
+						BitmapFactory.decodeResource(getResources(), id));
+			}
+			return bitmaps.get(id);
 		}
 	}
 

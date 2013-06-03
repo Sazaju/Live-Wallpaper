@@ -15,4 +15,19 @@
         <item>@string/pref_speed_5</item>
     </string-array>
 
+    <string-array name="zoomValues">
+        <item>0.5</item>
+        <item>0.75</item>
+        <item>1</item>
+        <item>1.5</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="zooms">
+        <item>@string/pref_zoom_0.5</item>
+        <item>@string/pref_zoom_0.75</item>
+        <item>@string/pref_zoom_1</item>
+        <item>@string/pref_zoom_1.5</item>
+        <item>@string/pref_zoom_2</item>
+    </string-array>
+
 </resources>

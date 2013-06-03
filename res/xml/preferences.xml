@@ -8,4 +8,11 @@
         android:key="@string/pref_speed_key"
         android:title="@string/pref_speed_title" />
 
+    <ListPreference
+        android:defaultValue="@string/pref_zoom_default"
+        android:entries="@array/zooms"
+        android:entryValues="@array/zoomValues"
+        android:key="@string/pref_zoom_key"
+        android:title="@string/pref_zoom_title" />
+
 </PreferenceScreen>
