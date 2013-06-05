@@ -52,7 +52,9 @@ public class LivingWallpaper extends WallpaperService {
 				} else {
 					// save resources
 				}
-				handler.postDelayed(botRunner, updateFrequencyInMs);
+				long remainingTime = updateFrequencyInMs
+						- bot.getLastExecutionDelayInMs();
+				handler.postDelayed(botRunner, Math.max(0, remainingTime));
 			}
 		};
 

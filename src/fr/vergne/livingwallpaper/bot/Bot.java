@@ -11,6 +11,7 @@ public class Bot {
 	private float x = 0;
 	private float y = 0;
 	private int pixelsPerSeconds = 0;
+	private long lastExecutionTimestamp = System.currentTimeMillis();
 	private final LinkedList<Action> actions = new LinkedList<Action>();
 	private final ActionFactory actionFactory = new ActionFactory();
 	private final Environment environment = new Environment();
@@ -62,9 +63,14 @@ public class Bot {
 			throw new IllegalStateException(status + " is not a managed "
 					+ status.getClass().getSimpleName());
 		}
+		lastExecutionTimestamp = System.currentTimeMillis();
 	}
 
 	public Environment getEnvironment() {
 		return environment;
+	}
+
+	public long getLastExecutionDelayInMs() {
+		return System.currentTimeMillis() - lastExecutionTimestamp;
 	}
 }

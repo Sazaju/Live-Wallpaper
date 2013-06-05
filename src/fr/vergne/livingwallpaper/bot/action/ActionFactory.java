@@ -20,7 +20,6 @@ public class ActionFactory {
 
 	public Action createWalkingAction(final float targetX, final float targetY) {
 		return new Action() {
-			private long updateTimestamp = 0;
 
 			@Override
 			public ActionStatus execute(Bot bot) {
@@ -29,8 +28,7 @@ public class ActionFactory {
 				float deltaX = targetX - x;
 				float deltaY = targetY - y;
 				if (Math.abs(deltaX) > 0.1 && Math.abs(deltaY) > 0.1) {
-					long updateDelay = System.currentTimeMillis()
-							- updateTimestamp;
+					long updateDelay = bot.getLastExecutionDelayInMs();
 					if (updateDelay > 500) {
 						/*
 						 * consider that the bot has done something else since
@@ -53,7 +51,6 @@ public class ActionFactory {
 						bot.setY(y + deltaY);
 					}
 
-					updateTimestamp = System.currentTimeMillis();
 					return ActionStatus.RUNNING;
 				} else {
 					bot.setX(targetX);
