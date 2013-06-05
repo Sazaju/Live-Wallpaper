@@ -107,22 +107,25 @@ public class LivingWallpaper extends WallpaperService {
 			SurfaceHolder holder = getSurfaceHolder();
 			Canvas canvas = null;
 			float zoom = 1;
-			try {
-				canvas = holder.lockCanvas(new Rect(0, 0, 0, 0));
-				if (canvas != null) {
-					int droidDensity = getDroidPicture().getDensity();
-					int canvasDensity = canvas.getDensity();
-					canvasDensity = canvasDensity == 0 ? droidDensity
-							: canvasDensity;
-					zoom = (float) canvasDensity / droidDensity;
-				} else {
-					throw new RuntimeException("Impossible to lock the canvas.");
-				}
-			} finally {
-				if (canvas != null) {
-					holder.unlockCanvasAndPost(canvas);
-				} else {
-					// nothing to unlock
+			synchronized (holder) {
+				try {
+					canvas = holder.lockCanvas(new Rect(0, 0, 0, 0));
+					if (canvas != null) {
+						int droidDensity = getDroidPicture().getDensity();
+						int canvasDensity = canvas.getDensity();
+						canvasDensity = canvasDensity == 0 ? droidDensity
+								: canvasDensity;
+						zoom = (float) canvasDensity / droidDensity;
+					} else {
+						throw new RuntimeException(
+								"Impossible to lock the canvas.");
+					}
+				} finally {
+					if (canvas != null) {
+						holder.unlockCanvasAndPost(canvas);
+					} else {
+						// nothing to unlock
+					}
 				}
 			}
 			return zoom;
@@ -180,24 +183,27 @@ public class LivingWallpaper extends WallpaperService {
 		private void draw() {
 			SurfaceHolder holder = getSurfaceHolder();
 			Canvas canvas = null;
-			try {
-				float zoom = getCanvasZoom();
-				canvas = holder.lockCanvas();
-				if (canvas != null) {
-					canvas.drawColor(Color.WHITE);
-					float left = bot.getX()
-							- (zoom * getDroidPicture().getWidth() / 2);
-					float top = bot.getY()
-							- (zoom * getDroidPicture().getHeight() / 2);
-					canvas.drawBitmap(getDroidPicture(), left, top, null);
-				} else {
-					throw new RuntimeException("Impossible to lock the canvas.");
-				}
-			} finally {
-				if (canvas != null) {
-					holder.unlockCanvasAndPost(canvas);
-				} else {
-					// nothing to unlock
+			float zoom = getCanvasZoom();
+			synchronized (holder) {
+				try {
+					canvas = holder.lockCanvas();
+					if (canvas != null) {
+						canvas.drawColor(Color.WHITE);
+						float left = bot.getX()
+								- (zoom * getDroidPicture().getWidth() / 2);
+						float top = bot.getY()
+								- (zoom * getDroidPicture().getHeight() / 2);
+						canvas.drawBitmap(getDroidPicture(), left, top, null);
+					} else {
+						throw new RuntimeException(
+								"Impossible to lock the canvas.");
+					}
+				} finally {
+					if (canvas != null) {
+						holder.unlockCanvasAndPost(canvas);
+					} else {
+						// nothing to unlock
+					}
 				}
 			}
 		}
