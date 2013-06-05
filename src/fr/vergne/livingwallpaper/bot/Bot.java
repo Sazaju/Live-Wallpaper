@@ -11,13 +11,12 @@ public class Bot {
 	private float x = 0;
 	private float y = 0;
 	private int pixelsPerSeconds = 0;
-	private final LinkedList<Action> runningActions = new LinkedList<Action>();
-	private final LinkedList<Action> facultativeActions = new LinkedList<Action>();
+	private final LinkedList<Action> actions = new LinkedList<Action>();
 	private final ActionFactory actionFactory = new ActionFactory();
 	private final Environment environment = new Environment();
 
 	public Bot() {
-		facultativeActions.add(actionFactory.createRandomWalkingAction());
+		actions.add(actionFactory.createRandomWalkingAction());
 	}
 
 	public float getX() {
@@ -45,19 +44,18 @@ public class Bot {
 	}
 
 	public void addAction(Action action) {
-		runningActions.add(action);
+		actions.add(action);
 	}
 
 	private Action lastAction;
 
 	public void executeAction() {
-		lastAction = runningActions.isEmpty() ? facultativeActions
-				.removeFirst() : runningActions.removeFirst();
+		lastAction = actions.removeFirst();
 		ActionStatus status = lastAction.execute(this);
 		if (status == ActionStatus.RUNNING) {
-			runningActions.addLast(lastAction);
+			actions.addFirst(lastAction);
 		} else if (status == ActionStatus.FACULTATIVE) {
-			facultativeActions.addLast(lastAction);
+			actions.addLast(lastAction);
 		} else if (status == ActionStatus.FINISHED) {
 			// forget the action
 		} else {
