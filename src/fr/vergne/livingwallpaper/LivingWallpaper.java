@@ -17,12 +17,11 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import fr.vergne.livingwallpaper.bot.Bot;
 import fr.vergne.livingwallpaper.bot.BotEmotion;
-import fr.vergne.livingwallpaper.bot.action.ActionFactory;
+import fr.vergne.livingwallpaper.bot.need.NeedFactory;
 import fr.vergne.livingwallpaper.environment.Environment;
 
-// TODO Move random targets to emotion (but with no delay) as "bored"
-// TODO Remove touch targets but add "interrupted" emotion (touch droid = droid stop during 4s + display "?")
-// TODO use listeners? services?
+// TODO consider chaining needs, such that if a need implies to execute an action which implies to be in a specific state which is not occurring, then being in this state becomes a need to fulfill before and so on (so also manage actions dependencies, not just priority, because if the previous action is fulfilled and another action is done before the main one, then the pre-condition of the main can be changed and thus we need to redo the previous one).
+// TODO consider need alternatives, to be able to choose between different actions depending on the pre-conditions (still how to choose remain a personal choice, thus should be linked to the personality)
 public class LivingWallpaper extends WallpaperService {
 
 	@Override
@@ -36,7 +35,6 @@ public class LivingWallpaper extends WallpaperService {
 		private boolean visible = true;
 		private final Bot bot = new Bot();
 		private final Environment botEnvironment = bot.getEnvironment();
-		private final ActionFactory actionFactory = new ActionFactory();
 		private final BotEmotion botEmotion = new BotEmotion();
 		private final Handler handler = new Handler();
 		private final String PREF_SPEED = getResources().getString(
@@ -44,6 +42,7 @@ public class LivingWallpaper extends WallpaperService {
 		private final String PREF_ZOOM = getResources().getString(
 				R.string.pref_zoom_key);
 		private final Runnable botRunner = new Runnable() {
+
 			@Override
 			public void run() {
 				bot.executeAction();
@@ -174,8 +173,8 @@ public class LivingWallpaper extends WallpaperService {
 
 		@Override
 		public void onTouchEvent(MotionEvent event) {
-			bot.addAction(actionFactory.createWalkingAction(event.getX(),
-					event.getY()));
+			bot.addNeed(NeedFactory.getInstance().createLocationNeed(
+					event.getX(), event.getY()));
 			botEmotion.interrupt();
 			super.onTouchEvent(event);
 		}

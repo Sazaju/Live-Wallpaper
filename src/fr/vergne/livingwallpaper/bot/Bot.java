@@ -1,10 +1,11 @@
 package fr.vergne.livingwallpaper.bot;
 
-import java.util.LinkedList;
+import java.util.Collection;
 
 import fr.vergne.livingwallpaper.bot.action.Action;
 import fr.vergne.livingwallpaper.bot.action.ActionFactory;
-import fr.vergne.livingwallpaper.bot.action.ActionStatus;
+import fr.vergne.livingwallpaper.bot.need.Need;
+import fr.vergne.livingwallpaper.bot.need.NeedManager;
 import fr.vergne.livingwallpaper.environment.Environment;
 
 public class Bot {
@@ -12,12 +13,12 @@ public class Bot {
 	private float y = 0;
 	private int pixelsPerSeconds = 0;
 	private long lastExecutionTimestamp = System.currentTimeMillis();
-	private final LinkedList<Action> actions = new LinkedList<Action>();
-	private final ActionFactory actionFactory = new ActionFactory();
+	private final NeedManager needs = new NeedManager(this);
 	private final Environment environment = new Environment();
+	private final Action defaultAction = ActionFactory.getInstance()
+			.createRandomWalkingAction();
 
 	public Bot() {
-		actions.add(actionFactory.createRandomWalkingAction());
 	}
 
 	public float getX() {
@@ -44,25 +45,21 @@ public class Bot {
 		this.pixelsPerSeconds = pixelsPerSecond;
 	}
 
-	public void addAction(Action action) {
-		actions.add(action);
+	public void addNeed(Need need) {
+		needs.add(need);
 	}
 
-	private Action lastAction;
-
 	public void executeAction() {
-		lastAction = actions.removeFirst();
-		ActionStatus status = lastAction.execute(this);
-		if (status == ActionStatus.RUNNING) {
-			actions.addFirst(lastAction);
-		} else if (status == ActionStatus.FACULTATIVE) {
-			actions.addLast(lastAction);
-		} else if (status == ActionStatus.FINISHED) {
-			// forget the action
+		Action action;
+		if (needs.isEmpty()) {
+			action = defaultAction;
 		} else {
-			throw new IllegalStateException(status + " is not a managed "
-					+ status.getClass().getSimpleName());
+			Need need = needs.getCurrentNeed(this);
+			Collection<Action> alternatives = need.getAlternatives();
+			// TODO make smarter decision + check pre-conditions
+			action = alternatives.iterator().next();
 		}
+		action.execute(this);
 		lastExecutionTimestamp = System.currentTimeMillis();
 	}
 
