@@ -3,7 +3,6 @@ package fr.vergne.livingwallpaper.bot;
 import java.util.Collection;
 
 import fr.vergne.livingwallpaper.bot.action.Action;
-import fr.vergne.livingwallpaper.bot.action.ActionFactory;
 import fr.vergne.livingwallpaper.bot.need.Need;
 import fr.vergne.livingwallpaper.bot.need.NeedManager;
 import fr.vergne.livingwallpaper.environment.Environment;
@@ -15,8 +14,6 @@ public class Bot {
 	private long lastExecutionTimestamp = System.currentTimeMillis();
 	private final NeedManager needs = new NeedManager(this);
 	private final Environment environment = new Environment();
-	private final Action defaultAction = ActionFactory.getInstance()
-			.createRandomWalkingAction();
 
 	public Bot() {
 	}
@@ -52,14 +49,14 @@ public class Bot {
 	public void executeAction() {
 		Action action;
 		if (needs.isEmpty()) {
-			action = defaultAction;
+			// do not execute anything
 		} else {
 			Need need = needs.getCurrentNeed(this);
 			Collection<Action> alternatives = need.getAlternatives();
 			// TODO make smarter decision + check pre-conditions
 			action = alternatives.iterator().next();
+			action.execute(this);
 		}
-		action.execute(this);
 		lastExecutionTimestamp = System.currentTimeMillis();
 	}
 
