@@ -17,7 +17,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import fr.vergne.livingwallpaper.bot.Bot;
 import fr.vergne.livingwallpaper.bot.BotEmotion;
-import fr.vergne.livingwallpaper.bot.need.NeedFactory;
+import fr.vergne.livingwallpaper.bot.need.LocationNeed;
 import fr.vergne.livingwallpaper.environment.Environment;
 
 // TODO consider chaining needs, such that if a need implies to execute an action which implies to be in a specific state which is not occurring, then being in this state becomes a need to fulfill before and so on (so also manage actions dependencies, not just priority, because if the previous action is fulfilled and another action is done before the main one, then the pre-condition of the main can be changed and thus we need to redo the previous one).
@@ -173,8 +173,7 @@ public class LivingWallpaper extends WallpaperService {
 
 		@Override
 		public void onTouchEvent(MotionEvent event) {
-			bot.addNeed(NeedFactory.getInstance().createLocationNeed(
-					event.getX(), event.getY()));
+			bot.addNeed(new LocationNeed(event.getX(), event.getY()));
 			botEmotion.interrupt();
 			super.onTouchEvent(event);
 		}
